@@ -1,0 +1,44 @@
+import React from "react";
+import { motion } from "framer-motion";
+
+interface FAQCardProps {
+  primaryBlue: string;
+  title: string;
+  description: string;
+  variants: any;
+}
+
+export const FAQCard: React.FC<FAQCardProps> = ({
+  primaryBlue,
+  title,
+  description,
+  variants,
+}) => {
+  return (
+    <motion.div
+      className="group relative rounded-xl overflow-hidden"
+      variants={variants}
+      whileHover={{ y: -10, transition: { duration: 0.3 } }}
+    >
+      {/* Card background with gradient border */}
+      <div className="absolute inset-0 p-0.5 rounded-xl bg-gradient-to-br from-[#0A3363] to-[#CC0000] opacity-80" />
+
+      {/* Card content */}
+      <div className="relative h-full bg-white rounded-xl p-8 flex flex-col">
+        <h3
+          className="text-xl font-semibold mb-4"
+          style={{ color: primaryBlue }}
+        >
+          {title}
+        </h3>
+
+        <p className="text-gray-600 leading-relaxed flex-grow">{description}</p>
+
+        {/* Bottom accent element */}
+        <div className="w-16 h-1 mt-6 rounded bg-gradient-to-r from-[#0A3363] to-[#CC0000] transform origin-left scale-0 group-hover:scale-100 transition-transform duration-300" />
+      </div>
+    </motion.div>
+  );
+};
+
+export default FAQCard;
