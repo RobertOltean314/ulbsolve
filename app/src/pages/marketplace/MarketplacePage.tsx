@@ -1,380 +1,532 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-interface Task {
-  id: string;
-  title: string;
-  author: string;
-  authorWallet: string;
-  description: string;
-  reward: number;
-  image: string;
-  difficulty: "Easy" | "Medium" | "Hard";
-  tags: string[];
-  timestamp: string;
-  inProgress: boolean;
-}
+import { CommissionStatus } from "../../types/CommissionStatus";
+import FilterPanel from "../../components/Marketplace/FilterPanel";
+import SearchBar from "../../components/Marketplace/SearchBar";
+import { CommissionCard } from "../../components/Marketplace/CommissionCard";
+import { MOCK_COMMISSIONS } from "../../data/mockCommissions";
 
 const MarketplacePage: React.FC = () => {
   const navigate = useNavigate();
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [filter, setFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<CommissionStatus[]>([]);
+  const [rewardRangeFilter, setRewardRangeFilter] = useState<[number, number]>([
+    0, 100,
+  ]);
+  const [sortOption, setSortOption] = useState("newest");
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [userWishlist, setUserWishlist] = useState<string[]>([]);
+  const [userNotInterested, setUserNotInterested] = useState<string[]>([]);
+  const [userWorkingOn, setUserWorkingOn] = useState<string[]>([]);
 
-  useEffect(() => {
-    const fetchTasks = async () => {
-      setIsLoading(true);
-      try {
-        // This would be replaced with actual API calls
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+  // Filter and sort commissions based on current filters
+  const filteredCommissions = MOCK_COMMISSIONS.filter((commission) => {
+    // Filter by search query
+    if (
+      searchQuery &&
+      !commission.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
+      !commission.description.toLowerCase().includes(searchQuery.toLowerCase())
+    ) {
+      return false;
+    }
 
-        // Mock data
-        const mockTasks: Task[] = [
-          {
-            id: "1",
-            title: "Create a React component for data visualization",
-            author: "DataVizPro",
-            authorWallet: "3xtz...j7k2",
-            description:
-              "Need a reusable component that can visualize network data using D3.js within a React application.",
-            reward: 0.8,
-            image: "https://example.com/img1.jpg",
-            difficulty: "Medium",
-            tags: ["React", "D3.js", "Frontend"],
-            timestamp: "2023-04-05T10:30:00Z",
-            inProgress: false,
-          },
-          {
-            id: "2",
-            title: "Build a smart contract for NFT marketplace",
-            author: "CryptoChainDev",
-            authorWallet: "7hty...p9f3",
-            description:
-              "Develop a Solana smart contract for an NFT marketplace with royalty features.",
-            reward: 2.5,
-            image: "https://example.com/img2.jpg",
-            difficulty: "Hard",
-            tags: ["Solana", "Rust", "Smart Contract"],
-            timestamp: "2023-04-03T14:20:00Z",
-            inProgress: true,
-          },
-          {
-            id: "3",
-            title: "Design a landing page for DeFi project",
-            author: "DesignMaster",
-            authorWallet: "2fgd...h5j7",
-            description:
-              "Create a modern and user-friendly landing page design for a new DeFi project.",
-            reward: 0.5,
-            image: "https://example.com/img3.jpg",
-            difficulty: "Easy",
-            tags: ["UI/UX", "Figma", "Design"],
-            timestamp: "2023-04-06T09:15:00Z",
-            inProgress: false,
-          },
-          {
-            id: "4",
-            title: "Implement wallet authentication",
-            author: "SecureBlockchain",
-            authorWallet: "9ikm...l0p2",
-            description:
-              "Implement secure wallet authentication for a dApp using Phantom and Solflare.",
-            reward: 1.2,
-            image: "https://example.com/img4.jpg",
-            difficulty: "Medium",
-            tags: ["Wallet", "Authentication", "Security"],
-            timestamp: "2023-04-04T16:45:00Z",
-            inProgress: false,
-          },
-        ];
+    // Filter by status
+    if (statusFilter.length > 0 && !statusFilter.includes(commission.status)) {
+      return false;
+    }
 
-        setTasks(mockTasks);
-      } catch (error) {
-        console.error("Error fetching tasks:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    // Filter by reward range
+    if (
+      commission.reward < rewardRangeFilter[0] ||
+      commission.reward > rewardRangeFilter[1]
+    ) {
+      return false;
+    }
 
-    fetchTasks();
-  }, []);
+    // Don't show not interested items
+    if (userNotInterested.includes(commission.id)) {
+      return false;
+    }
 
-  const filteredTasks = tasks.filter((task) => {
-    // Apply search filter
-    const matchesSearch =
-      task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      task.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      task.tags.some((tag) =>
-        tag.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-
-    // Apply category filter
-    if (filter === "all") return matchesSearch;
-    if (filter === "inProgress") return matchesSearch && task.inProgress;
-    if (filter === "notStarted") return matchesSearch && !task.inProgress;
-
-    // Filter by difficulty
-    return (
-      matchesSearch && task.difficulty.toLowerCase() === filter.toLowerCase()
-    );
+    return true;
   });
 
-  const handleTaskClick = (taskId: string) => {
-    // Navigate to task detail page (to be implemented)
-    navigate(`/task/${taskId}`);
+  // Sort commissions
+  const sortedCommissions = [...filteredCommissions].sort((a, b) => {
+    switch (sortOption) {
+      case "newest":
+        return (
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+      case "oldest":
+        return (
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        );
+      case "highest-reward":
+        return b.reward - a.reward;
+      case "lowest-reward":
+        return a.reward - b.reward;
+      case "deadline-soon":
+        return a.daysLeft - b.daysLeft;
+      case "most-popular":
+        return b.participants - a.participants;
+      default:
+        return 0;
+    }
+  });
+
+  const handleCommissionClick = (id: string) => {
+    navigate(`/commission/${id}`);
   };
 
-  const handleAddToWishlist = (e: React.MouseEvent, taskId: string) => {
+  const handleToggleWishlist = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    // Add to wishlist functionality
-    console.log("Add to wishlist:", taskId);
-  };
-
-  const handleNotInterested = (e: React.MouseEvent, taskId: string) => {
-    e.stopPropagation();
-    // Mark as not interested
-    console.log("Not interested:", taskId);
-  };
-
-  const handleStartTask = (e: React.MouseEvent, taskId: string) => {
-    e.stopPropagation();
-    // Start the task
-    console.log("Start task:", taskId);
-
-    // Update UI to show task in progress
-    setTasks(
-      tasks.map((task) =>
-        task.id === taskId ? { ...task, inProgress: true } : task
-      )
+    setUserWishlist((prev) =>
+      prev.includes(id) ? prev.filter((itemId) => itemId !== id) : [...prev, id]
     );
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-[#0A1232] pt-24 px-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="animate-pulse">
-            <div className="h-10 bg-[#1f2854] rounded w-1/4 mb-6"></div>
-            <div className="h-12 bg-[#1f2854] rounded mb-6"></div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {[1, 2, 3, 4].map((item) => (
-                <div key={item} className="h-64 bg-[#1f2854] rounded"></div>
-              ))}
+  const handleToggleNotInterested = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setUserNotInterested((prev) =>
+      prev.includes(id) ? prev.filter((itemId) => itemId !== id) : [...prev, id]
+    );
+  };
+
+  const handleToggleWorkingOn = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setUserWorkingOn((prev) =>
+      prev.includes(id) ? prev.filter((itemId) => itemId !== id) : [...prev, id]
+    );
+  };
+
+  const resetFilters = () => {
+    setSearchQuery("");
+    setStatusFilter([]);
+    setRewardRangeFilter([0, 100]);
+    setSortOption("newest");
+  };
+
+  const getActiveFiltersCount = () => {
+    let count = 0;
+    if (searchQuery) count++;
+    if (statusFilter.length > 0) count++;
+    if (rewardRangeFilter[0] > 0 || rewardRangeFilter[1] < 100) count++;
+    return count;
+  };
+
+  const activeFiltersCount = getActiveFiltersCount();
+
+  return (
+    <div className="bg-[#121212] text-white pb-12">
+      {/* Header with enhanced styling - Removed top margin/padding */}
+      <div className="relative bg-[#0A1A3C] px-4 md:px-8 border-b border-gray-700 shadow-lg">
+        <div className="absolute top-0 left-0 w-full h-1 bg-[#4683df]"></div>
+        <div className="max-w-7xl mx-auto relative z-10 py-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold text-white">
+                Marketplace
+              </h1>
+              <p className="text-gray-300 mt-1 max-w-xl text-sm">
+                Browse and discover projects and opportunities from the ULBS
+                community
+              </p>
+            </div>
+            <div className="mt-2 sm:mt-0">
+              <div className="flex items-center space-x-2 text-xs bg-[#162A4C] px-3 py-1.5 rounded-lg border border-gray-700">
+                <span className="text-gray-400">Available commissions:</span>
+                <span className="text-[#4683df] font-bold">
+                  {MOCK_COMMISSIONS.length}
+                </span>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    );
-  }
 
-  return (
-    <div className="min-h-screen bg-[#0A1232] pt-24 px-4 text-white">
-      <div className="max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold text-[#4683df] mb-6">Marketplace</h1>
+      {/* Status Tabs - Added instead of stats bar */}
+      <div className="max-w-7xl mx-auto px-4 md:px-8 mt-4">
+        <div className="grid grid-cols-4 gap-2">
+          <div className="bg-[#162A4C] p-3 rounded-lg border border-gray-700 shadow-md flex flex-col items-center">
+            <p className="text-gray-300 text-xs uppercase tracking-wider font-medium">
+              OPEN
+            </p>
+            <p className="text-2xl font-bold text-white">
+              {
+                MOCK_COMMISSIONS.filter(
+                  (c) => c.status === CommissionStatus.Open
+                ).length
+              }
+            </p>
+          </div>
+          <div className="bg-[#162A4C] p-3 rounded-lg border border-gray-700 shadow-md flex flex-col items-center">
+            <p className="text-gray-300 text-xs uppercase tracking-wider font-medium">
+              IN PROGRESS
+            </p>
+            <p className="text-2xl font-bold text-white">
+              {
+                MOCK_COMMISSIONS.filter(
+                  (c) => c.status === CommissionStatus.InProgress
+                ).length
+              }
+            </p>
+          </div>
+          <div className="bg-[#162A4C] p-3 rounded-lg border border-gray-700 shadow-md flex flex-col items-center">
+            <p className="text-gray-300 text-xs uppercase tracking-wider font-medium">
+              YOUR WISHLIST
+            </p>
+            <p className="text-2xl font-bold text-white">
+              {userWishlist.length}
+            </p>
+          </div>
+          <div className="bg-[#162A4C] p-3 rounded-lg border border-gray-700 shadow-md flex flex-col items-center">
+            <p className="text-gray-300 text-xs uppercase tracking-wider font-medium">
+              WORKING ON
+            </p>
+            <p className="text-2xl font-bold text-white">
+              {userWorkingOn.length}
+            </p>
+          </div>
+        </div>
+      </div>
 
-        <div className="mb-8 flex flex-col md:flex-row items-start md:items-center gap-4">
-          <div className="relative flex-grow">
-            <input
-              type="text"
-              placeholder="Search tasks..."
-              className="w-full bg-[#131b3d] border border-[#1d2a4d] rounded-lg py-2 px-4 pl-10 focus:outline-none focus:ring-2 focus:ring-[#4683df]"
+      {/* Filters and Search Row */}
+      <div className="max-w-7xl mx-auto mt-4 px-4 md:px-8 space-y-4">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+          {/* Search Bar - Takes 4 columns on large screens */}
+          <div className="lg:col-span-4">
+            <SearchBar
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={setSearchQuery}
+              onSearch={() => {
+                /* Handle search */
+              }}
+              placeholder="Search by title or description..."
             />
-            <svg
-              className="absolute left-3 top-2.5 h-5 w-5 text-gray-400"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path
-                fillRule="evenodd"
-                d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                clipRule="evenodd"
-              />
-            </svg>
           </div>
 
-          <div className="flex gap-2 flex-wrap">
+          {/* Sort Dropdown - Takes 2 columns on large screens */}
+          <div className="lg:col-span-2">
+            <div className="relative">
+              <select
+                className="w-full px-4 py-2.5 bg-[#162A4C] border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#4683df] focus:border-[#4683df]"
+                value={sortOption}
+                onChange={(e) => setSortOption(e.target.value)}
+              >
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
+                <option value="highest-reward">Highest Reward</option>
+                <option value="lowest-reward">Lowest Reward</option>
+                <option value="deadline-soon">Deadline Soon</option>
+                <option value="most-popular">Most Popular</option>
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400">
+                <svg
+                  className="h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M19 9l-7 7-7-7"
+                  ></path>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          {/* Filter Toggle Button - Takes 2 columns on large screens */}
+          <div className="lg:col-span-2">
             <button
-              className={`px-4 py-2 rounded-lg transition-colors ${
-                filter === "all"
-                  ? "bg-[#4683df] text-white"
-                  : "bg-[#131b3d] text-gray-300 hover:bg-[#1d2a4d]"
-              }`}
-              onClick={() => setFilter("all")}
+              className="w-full flex justify-center items-center px-4 py-2.5 bg-[#162A4C] border border-gray-700 rounded-lg text-white hover:bg-[#1c345a] transition-colors"
+              onClick={() => setIsFilterModalOpen(!isFilterModalOpen)}
             >
-              All
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 mr-2 text-[#4683df]"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+                />
+              </svg>
+              Filters
+              {activeFiltersCount > 0 && (
+                <span className="ml-2 bg-[#4683df] text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                  {activeFiltersCount}
+                </span>
+              )}
             </button>
+          </div>
+
+          {/* Reset Button - Takes 2 columns on large screens */}
+          <div className="lg:col-span-2">
             <button
-              className={`px-4 py-2 rounded-lg transition-colors ${
-                filter === "easy"
-                  ? "bg-[#4683df] text-white"
-                  : "bg-[#131b3d] text-gray-300 hover:bg-[#1d2a4d]"
-              }`}
-              onClick={() => setFilter("easy")}
+              className="w-full px-4 py-2.5 bg-[#4683df] hover:bg-[#5a9aec] rounded-lg text-white transition-colors"
+              onClick={resetFilters}
             >
-              Easy
+              <span className="flex items-center justify-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 mr-1.5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                Reset Filters
+              </span>
             </button>
+          </div>
+
+          {/* Create Commission Button - Takes 2 columns on large screens */}
+          <div className="lg:col-span-2">
             <button
-              className={`px-4 py-2 rounded-lg transition-colors ${
-                filter === "medium"
-                  ? "bg-[#4683df] text-white"
-                  : "bg-[#131b3d] text-gray-300 hover:bg-[#1d2a4d]"
-              }`}
-              onClick={() => setFilter("medium")}
+              className="w-full px-4 py-2.5 bg-[#4CAF50] hover:bg-[#3e8e41] rounded-lg text-white transition-colors"
+              onClick={() => navigate("/publish")}
             >
-              Medium
-            </button>
-            <button
-              className={`px-4 py-2 rounded-lg transition-colors ${
-                filter === "hard"
-                  ? "bg-[#4683df] text-white"
-                  : "bg-[#131b3d] text-gray-300 hover:bg-[#1d2a4d]"
-              }`}
-              onClick={() => setFilter("hard")}
-            >
-              Hard
-            </button>
-            <button
-              className={`px-4 py-2 rounded-lg transition-colors ${
-                filter === "inProgress"
-                  ? "bg-[#4683df] text-white"
-                  : "bg-[#131b3d] text-gray-300 hover:bg-[#1d2a4d]"
-              }`}
-              onClick={() => setFilter("inProgress")}
-            >
-              In Progress
+              <span className="flex items-center justify-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 mr-1.5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                Create Commission
+              </span>
             </button>
           </div>
         </div>
 
-        {filteredTasks.length === 0 ? (
-          <div className="bg-[#131b3d] rounded-lg p-8 text-center">
-            <p className="text-xl mb-2">No tasks found</p>
-            <p className="text-gray-400">
-              Try adjusting your search or filters
-            </p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {filteredTasks.map((task) => (
-              <div
-                key={task.id}
-                className="bg-[#131b3d] rounded-lg overflow-hidden cursor-pointer hover:shadow-xl transition-all transform hover:-translate-y-1"
-                onClick={() => handleTaskClick(task.id)}
-              >
-                <div className="h-40 bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center relative">
-                  <span className="absolute top-2 right-2 bg-[#0A1232] px-3 py-1 rounded-full text-sm font-medium">
-                    {task.reward} SOL
-                  </span>
-                  <h3 className="text-xl font-bold px-4 text-center">
-                    {task.title}
-                  </h3>
-                </div>
-
-                <div className="p-4">
-                  <div className="flex justify-between items-center mb-3">
-                    <div className="flex items-center">
-                      <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-xs font-bold">
-                        {task.author.substring(0, 2)}
-                      </div>
-                      <span className="ml-2 text-sm">{task.author}</span>
-                    </div>
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        task.difficulty === "Easy"
-                          ? "bg-green-900 text-green-200"
-                          : task.difficulty === "Medium"
-                          ? "bg-yellow-900 text-yellow-200"
-                          : "bg-red-900 text-red-200"
-                      }`}
-                    >
-                      {task.difficulty}
-                    </span>
-                  </div>
-
-                  <p className="text-gray-300 text-sm mb-4 line-clamp-2">
-                    {task.description}
-                  </p>
-
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {task.tags.map((tag, index) => (
-                      <span
-                        key={index}
-                        className="bg-[#1d2a4d] px-2 py-1 rounded text-xs"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-
-                  <div className="flex justify-between">
-                    <div className="flex gap-2">
-                      <button
-                        className="p-2 bg-[#0c1429] rounded-full hover:bg-[#1d2a4d] transition-colors"
-                        onClick={(e) => handleAddToWishlist(e, task.id)}
-                        title="Add to wishlist"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-5 w-5"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
-                        >
-                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                        </svg>
-                      </button>
-                      <button
-                        className="p-2 bg-[#0c1429] rounded-full hover:bg-[#1d2a4d] transition-colors"
-                        onClick={(e) => handleNotInterested(e, task.id)}
-                        title="Not interested"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-5 w-5"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-                    {task.inProgress ? (
-                      <div className="px-3 py-1 bg-blue-900 text-blue-200 rounded-lg text-xs font-medium flex items-center">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-4 w-4 mr-1"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                        In Progress
-                      </div>
-                    ) : (
-                      <button
-                        className="px-3 py-1 bg-[#4683df] hover:bg-[#5a9aec] text-white rounded-lg text-sm font-medium"
-                        onClick={(e) => handleStartTask(e, task.id)}
-                      >
-                        Start
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
+        {/* Filter Panel Modal - Enhanced styling */}
+        {isFilterModalOpen && (
+          <div className="mt-4 bg-[#162A4C] border border-gray-700 rounded-lg p-5 shadow-lg">
+            <FilterPanel
+              statusFilter={statusFilter}
+              rewardRangeFilter={rewardRangeFilter}
+              onStatusFilterChange={setStatusFilter}
+              onRewardRangeChange={setRewardRangeFilter}
+              isHorizontal={true}
+              onApplyFilters={() => setIsFilterModalOpen(false)}
+            />
           </div>
         )}
+
+        {/* Results Count */}
+        <div className="flex justify-between items-center mt-4 bg-[#162A4C] px-4 py-3 rounded-lg border border-gray-800">
+          <div className="flex items-center">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5 text-[#4683df] mr-2"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path d="M9 9a2 2 0 114 0 2 2 0 01-4 0z" />
+              <path
+                fillRule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a4 4 0 00-3.446 6.032l-2.261 2.26a1 1 0 101.414 1.415l2.261-2.261A4 4 0 1011 5z"
+                clipRule="evenodd"
+              />
+            </svg>
+            <p className="text-gray-300">
+              Showing{" "}
+              <span className="font-semibold text-white">
+                {sortedCommissions.length}
+              </span>{" "}
+              results
+            </p>
+          </div>
+
+          {/* View options */}
+          <div className="flex space-x-2">
+            <button className="p-1.5 rounded bg-[#4683df] text-white">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+              </svg>
+            </button>
+            <button className="p-1.5 rounded bg-[#162A4C] text-gray-400 hover:text-white hover:bg-[#1c345a]">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Commissions Grid with enhanced styling */}
+      <div className="max-w-7xl mx-auto mt-4 px-4 md:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {sortedCommissions.map((commission) => (
+            <div
+              key={commission.id}
+              className="transition-transform duration-200 hover:translate-y-[-4px]"
+            >
+              <CommissionCard
+                id={commission.id}
+                title={commission.title}
+                description={commission.description}
+                reward={commission.reward}
+                status={commission.status}
+                createdAt={commission.createdAt}
+                daysLeft={commission.daysLeft}
+                participants={commission.participants}
+                isInWishlist={userWishlist.includes(commission.id)}
+                isNotInterested={userNotInterested.includes(commission.id)}
+                isWorkingOn={userWorkingOn.includes(commission.id)}
+                onClick={handleCommissionClick}
+                onWishlistToggle={handleToggleWishlist}
+                onNotInterestedToggle={handleToggleNotInterested}
+                onWorkingOnToggle={handleToggleWorkingOn}
+              />
+            </div>
+          ))}
+        </div>
+
+        {/* Empty State - Enhanced styling */}
+        {sortedCommissions.length === 0 && (
+          <div className="text-center py-16 bg-[#162A4C] rounded-lg border border-gray-800 shadow-lg">
+            <div className="relative w-20 h-20 mx-auto">
+              <svg
+                className="h-20 w-20 text-gray-600 mx-auto"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <div className="absolute bottom-0 right-0 bg-[#4683df] rounded-full p-1.5 border-2 border-[#121212]">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 text-white"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </div>
+            </div>
+            <h3 className="mt-6 text-2xl font-medium text-white">
+              No commissions found
+            </h3>
+            <p className="mt-2 text-gray-400 max-w-md mx-auto">
+              We couldn't find any commissions that match your current filters.
+              Try adjusting your search or filter criteria.
+            </p>
+            <div className="mt-6">
+              <button
+                onClick={resetFilters}
+                className="inline-flex items-center px-5 py-2.5 border border-transparent rounded-lg shadow-md text-sm font-medium text-white bg-[#4683df] hover:bg-[#5a9aec] transition-colors"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 mr-2"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                Reset all filters
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Pagination - Enhanced styling */}
+      <div className="max-w-7xl mx-auto mt-8 px-4 md:px-8">
+        <div className="flex justify-center">
+          <nav className="flex items-center bg-[#162A4C] rounded-lg border border-gray-700 p-1 shadow-lg">
+            <button
+              className="px-3 py-2 rounded-md text-gray-400 hover:text-white hover:bg-[#1c345a] transition-colors"
+              disabled={true}
+            >
+              <span className="sr-only">Previous</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </button>
+            <button className="px-4 py-2 rounded-md bg-[#4683df] text-white font-medium shadow-md">
+              1
+            </button>
+            <button className="px-4 py-2 rounded-md text-gray-300 hover:text-white hover:bg-[#1c345a] transition-colors">
+              2
+            </button>
+            <button className="px-4 py-2 rounded-md text-gray-300 hover:text-white hover:bg-[#1c345a] transition-colors">
+              3
+            </button>
+            <button className="px-3 py-2 rounded-md text-gray-300 hover:text-white hover:bg-[#1c345a] transition-colors">
+              <span className="sr-only">Next</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </button>
+          </nav>
+        </div>
       </div>
     </div>
   );

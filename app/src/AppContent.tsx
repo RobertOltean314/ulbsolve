@@ -8,7 +8,7 @@ import ProfilePage from "./pages/profile/ProfilePage";
 import PublishPage from "./pages/publish/PublishPage";
 import LeaderboardPage from "./pages/leaderboard/LeaderboardPage";
 import ChatPage from "./pages/chat/ChatPage";
-import ProtectedRoute from "./components/ProtectedRoute";
+import ProtectedRoute from "./context/ProtectedRoute";
 
 import { Navbar } from "./components/Navbar/Navbar";
 import "@solana/wallet-adapter-react-ui/styles.css";

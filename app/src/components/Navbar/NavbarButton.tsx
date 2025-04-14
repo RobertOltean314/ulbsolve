@@ -2,27 +2,30 @@ import React, { ReactNode } from "react";
 
 interface NavbarButtonProps {
   label: string;
-  onClick: () => void;
-  fullWidth?: boolean;
+  onClick?: () => void;
   icon?: ReactNode;
+  fullWidth?: boolean;
 }
 
 export const NavbarButton: React.FC<NavbarButtonProps> = ({
   label,
   onClick,
-  fullWidth = false,
   icon,
+  fullWidth = false,
 }) => {
   return (
     <button
-      className={`group ${
-        fullWidth ? "w-full" : ""
-      } text-white hover:text-[#4683df] py-2 px-3 transition-colors duration-200 flex items-center justify-center`}
       onClick={onClick}
+      className={`${
+        fullWidth ? "w-full" : ""
+      } bg-transparent hover:bg-[#4683df]/10 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-${
+        fullWidth ? "start" : "center"
+      }`}
     >
-      <span>{label}</span>
-      {icon && <span>{icon}</span>}
-      <div className="h-[2px] w-0 bg-[#4683df] transition-all duration-300 group-hover:w-full mt-1 absolute bottom-0 left-0" />
+      {icon && icon}
+      {label}
     </button>
   );
 };
+
+export default NavbarButton;
