@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CommissionStatus } from "../../types/CommissionStatus";
-import FilterPanel from "../../components/Marketplace/FilterPanel";
 import SearchBar from "../../components/Marketplace/SearchBar";
 import { CommissionCard } from "../../components/Marketplace/CommissionCard";
 import { MOCK_COMMISSIONS } from "../../data/mockCommissions";
@@ -15,7 +14,6 @@ const MarketplacePage: React.FC = () => {
     0, 100,
   ]);
   const [sortOption, setSortOption] = useState("newest");
-  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [userWishlist, setUserWishlist] = useState<string[]>([]);
   const [userNotInterested, setUserNotInterested] = useState<string[]>([]);
   const [userWorkingOn, setUserWorkingOn] = useState<string[]>([]);
@@ -146,52 +144,6 @@ const MarketplacePage: React.FC = () => {
         </div>
       </div>
 
-      {/* Status Tabs */}
-      <div className="mt-4">
-        <div className="grid grid-cols-4 gap-2">
-          <div className="bg-[#162A4C] p-3 rounded-lg border border-gray-700 shadow-md flex flex-col items-center">
-            <p className="text-gray-300 text-xs uppercase tracking-wider font-medium">
-              OPEN
-            </p>
-            <p className="text-2xl font-bold text-white">
-              {
-                MOCK_COMMISSIONS.filter(
-                  (c) => c.status === CommissionStatus.Open
-                ).length
-              }
-            </p>
-          </div>
-          <div className="bg-[#162A4C] p-3 rounded-lg border border-gray-700 shadow-md flex flex-col items-center">
-            <p className="text-gray-300 text-xs uppercase tracking-wider font-medium">
-              IN PROGRESS
-            </p>
-            <p className="text-2xl font-bold text-white">
-              {
-                MOCK_COMMISSIONS.filter(
-                  (c) => c.status === CommissionStatus.InProgress
-                ).length
-              }
-            </p>
-          </div>
-          <div className="bg-[#162A4C] p-3 rounded-lg border border-gray-700 shadow-md flex flex-col items-center">
-            <p className="text-gray-300 text-xs uppercase tracking-wider font-medium">
-              YOUR WISHLIST
-            </p>
-            <p className="text-2xl font-bold text-white">
-              {userWishlist.length}
-            </p>
-          </div>
-          <div className="bg-[#162A4C] p-3 rounded-lg border border-gray-700 shadow-md flex flex-col items-center">
-            <p className="text-gray-300 text-xs uppercase tracking-wider font-medium">
-              WORKING ON
-            </p>
-            <p className="text-2xl font-bold text-white">
-              {userWorkingOn.length}
-            </p>
-          </div>
-        </div>
-      </div>
-
       {/* Filters and Search Row */}
       <div className="mt-4 space-y-4">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
@@ -238,151 +190,6 @@ const MarketplacePage: React.FC = () => {
                 </svg>
               </div>
             </div>
-          </div>
-
-          {/* Filter Toggle Button - Takes 2 columns on large screens */}
-          <div className="lg:col-span-2">
-            <button
-              className="w-full flex justify-center items-center px-4 py-2.5 bg-[#162A4C] border border-gray-700 rounded-lg text-white hover:bg-[#1c345a] transition-colors"
-              onClick={() => setIsFilterModalOpen(!isFilterModalOpen)}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 mr-2 text-[#4683df]"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
-                />
-              </svg>
-              Filters
-              {activeFiltersCount > 0 && (
-                <span className="ml-2 bg-[#4683df] text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                  {activeFiltersCount}
-                </span>
-              )}
-            </button>
-          </div>
-
-          {/* Reset Button - Takes 2 columns on large screens */}
-          <div className="lg:col-span-2">
-            <button
-              className="w-full px-4 py-2.5 bg-[#4683df] hover:bg-[#5a9aec] rounded-lg text-white transition-colors"
-              onClick={resetFilters}
-            >
-              <span className="flex items-center justify-center">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5 mr-1.5"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                Reset Filters
-              </span>
-            </button>
-          </div>
-
-          {/* Create Commission Button - Takes 2 columns on large screens */}
-          <div className="lg:col-span-2">
-            <button
-              className="w-full px-4 py-2.5 bg-[#4CAF50] hover:bg-[#3e8e41] rounded-lg text-white transition-colors"
-              onClick={() => navigate("/publish")}
-            >
-              <span className="flex items-center justify-center">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5 mr-1.5"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                Create Commission
-              </span>
-            </button>
-          </div>
-        </div>
-
-        {/* Filter Panel Modal - Enhanced styling */}
-        {isFilterModalOpen && (
-          <div className="mt-4 bg-[#162A4C] border border-gray-700 rounded-lg p-5 shadow-lg">
-            <FilterPanel
-              statusFilter={statusFilter}
-              rewardRangeFilter={rewardRangeFilter}
-              onStatusFilterChange={setStatusFilter}
-              onRewardRangeChange={setRewardRangeFilter}
-              isHorizontal={true}
-              onApplyFilters={() => setIsFilterModalOpen(false)}
-            />
-          </div>
-        )}
-
-        {/* Results Count */}
-        <div className="flex justify-between items-center mt-4 bg-[#162A4C] px-4 py-3 rounded-lg border border-gray-800">
-          <div className="flex items-center">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 text-[#4683df] mr-2"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path d="M9 9a2 2 0 114 0 2 2 0 01-4 0z" />
-              <path
-                fillRule="evenodd"
-                d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a4 4 0 00-3.446 6.032l-2.261 2.26a1 1 0 101.414 1.415l2.261-2.261A4 4 0 1011 5z"
-                clipRule="evenodd"
-              />
-            </svg>
-            <p className="text-gray-300">
-              Showing{" "}
-              <span className="font-semibold text-white">
-                {sortedCommissions.length}
-              </span>{" "}
-              results
-            </p>
-          </div>
-
-          {/* View options */}
-          <div className="flex space-x-2">
-            <button className="p-1.5 rounded bg-[#4683df] text-white">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-4 w-4"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-              </svg>
-            </button>
-            <button className="p-1.5 rounded bg-[#162A4C] text-gray-400 hover:text-white hover:bg-[#1c345a]">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-4 w-4"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </button>
           </div>
         </div>
       </div>
@@ -478,56 +285,6 @@ const MarketplacePage: React.FC = () => {
             </div>
           </div>
         )}
-      </div>
-
-      {/* Pagination - Enhanced styling */}
-      <div className="mt-8">
-        <div className="flex justify-center">
-          <nav className="flex items-center bg-[#162A4C] rounded-lg border border-gray-700 p-1 shadow-lg">
-            <button
-              className="px-3 py-2 rounded-md text-gray-400 hover:text-white hover:bg-[#1c345a] transition-colors"
-              disabled={true}
-            >
-              <span className="sr-only">Previous</span>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </button>
-            <button className="px-4 py-2 rounded-md bg-[#4683df] text-white font-medium shadow-md">
-              1
-            </button>
-            <button className="px-4 py-2 rounded-md text-gray-300 hover:text-white hover:bg-[#1c345a] transition-colors">
-              2
-            </button>
-            <button className="px-4 py-2 rounded-md text-gray-300 hover:text-white hover:bg-[#1c345a] transition-colors">
-              3
-            </button>
-            <button className="px-3 py-2 rounded-md text-gray-300 hover:text-white hover:bg-[#1c345a] transition-colors">
-              <span className="sr-only">Next</span>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </button>
-          </nav>
-        </div>
       </div>
     </PageLayout>
   );
