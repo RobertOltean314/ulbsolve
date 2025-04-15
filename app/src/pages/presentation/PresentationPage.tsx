@@ -1,19 +1,22 @@
-// Modified PresentationPage.tsx
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSolana } from "../../context/SolanaContext";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
-import HeroSection from "../../components/Sections/HeroSection/HeroSection";
-import { Navbar } from "../../components/Navbar/Navbar";
-import ChallengeSection from "../../components/Sections/ChallengeSection/ChallengeSection";
-import { FeaturesSection } from "../../components/Sections/Features/FeaturesSection";
-import { UserTypesSection } from "../../components/Sections/UserTypesSection/UserTypesSection";
-import { WorkflowSection } from "../../components/Sections/WorkflowSection/WorkflowSection";
-import { FAQSection } from "../../components/Sections/FAQSection/FAQSection";
-import { TechStackSection } from "../../components/Sections/TechStackSection/TechStackSection";
-import { CTASection } from "../../components/Sections/CTASection/CTASection";
-import { FooterSection } from "../../components/Sections/FooterSection/FooterSection";
+import HeroSection from "../../components/Presentation/HeroSection/HeroSection";
+import ChallengeSection from "../../components/Presentation/ChallengeSection/ChallengeSection";
+import { FeaturesSection } from "../../components/Presentation/Features/FeaturesSection";
+import { UserTypesSection } from "../../components/Presentation/UserTypesSection/UserTypesSection";
+import { WorkflowSection } from "../../components/Presentation/WorkflowSection/WorkflowSection";
+import { FAQSection } from "../../components/Presentation/FAQSection/FAQSection";
+import { TechStackSection } from "../../components/Presentation/TechStackSection/TechStackSection";
+import { CTASection } from "../../components/Presentation/CTASection/CTASection";
+import { PageLayout } from "../../components/Layout/PageLayout";
+import Footer from "../../components/Common/Footer";
 
+/**
+ * Presentation page for ULBSolve platform
+ * Uses the Layout component with fullWidth=true to accommodate the full-width sections
+ */
 const PresentationPage: React.FC = () => {
   const navigate = useNavigate();
   const { connected } = useSolana();
@@ -45,54 +48,18 @@ const PresentationPage: React.FC = () => {
     }
   }, [connected, navigate]);
 
-  // Scroll functions for each section
-  const scrollToHero = () => {
-    heroRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  const scrollToChallenge = () => {
-    challengeRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  const scrollToFeatures = () => {
-    featuresRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  const scrollToUserTypes = () => {
-    userTypesRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  const scrollToWorkflow = () => {
-    workflowRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  const scrollToFAQ = () => {
-    faqRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  const scrollToTechStack = () => {
-    techStackRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
   // Modified to directly open the wallet modal
   const handleExploreClick = () => {
     setVisible(true); // This directly shows the native Solana wallet selection modal
   };
 
   return (
-    <div className="bg-[#121212] text-white overflow-x-hidden font-inter">
-      <Navbar
-        isScrolled={isScrolled}
-        onLogoClick={scrollToHero}
-        onChallengeClick={scrollToChallenge}
-        onFeatureClick={scrollToFeatures}
-        onUserTypesClick={scrollToUserTypes}
-        onWorkflowClick={scrollToWorkflow}
-        onFAQClick={scrollToFAQ}
-        onTechStackClick={scrollToTechStack}
-      />
-
-      <div ref={heroRef}>
+    <PageLayout
+      fullWidth={true}
+      className="overflow-x-hidden font-inter"
+      hideFooter={true} // Use the specialized FooterSection from presentation page
+    >
+      <div ref={heroRef} id="hero">
         <HeroSection
           title="ULBSolve"
           subtitle="Connect. Collaborate. Create."
@@ -102,34 +69,37 @@ const PresentationPage: React.FC = () => {
         />
       </div>
 
-      <div ref={challengeRef}>
+      <div ref={challengeRef} id="challenges">
         <ChallengeSection />
       </div>
 
-      <div ref={featuresRef}>
+      <div ref={featuresRef} id="features">
         <FeaturesSection />
       </div>
 
-      <div ref={userTypesRef}>
+      <div ref={userTypesRef} id="user-types">
         <UserTypesSection />
       </div>
 
-      <div ref={workflowRef}>
+      <div ref={workflowRef} id="workflow">
         <WorkflowSection />
       </div>
 
-      <div ref={faqRef}>
+      <div ref={faqRef} id="faq">
         <FAQSection />
       </div>
 
-      <div ref={techStackRef}>
+      <div ref={techStackRef} id="tech-stack">
         <TechStackSection />
       </div>
 
       <CTASection />
 
-      <FooterSection />
-    </div>
+      {/* Use the FooterSection directly in the presentation page for now */}
+      <div className="mt-auto">
+        <Footer />
+      </div>
+    </PageLayout>
   );
 };
 

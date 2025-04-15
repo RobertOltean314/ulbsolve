@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { formatWalletAddress, formatSolAmount } from "../../utils/format";
+import { formatWalletAddress, formatSolAmount } from "../../../utils/format";
 
 interface SettingsDropdownProps {
   publicKey: string;

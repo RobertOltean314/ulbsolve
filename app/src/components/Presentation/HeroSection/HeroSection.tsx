@@ -33,7 +33,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
 
   return (
     <section
-      className={`min-h-screen w-full flex items-center justify-center pt-20 relative overflow-hidden ${bgColor}`}
+      className={`min-h-screen w-full flex items-center justify-center relative overflow-hidden ${bgColor}`}
       aria-label="Hero section"
     >
       <HeroBackground

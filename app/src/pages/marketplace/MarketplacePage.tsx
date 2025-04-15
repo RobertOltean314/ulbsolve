@@ -5,6 +5,7 @@ import FilterPanel from "../../components/Marketplace/FilterPanel";
 import SearchBar from "../../components/Marketplace/SearchBar";
 import { CommissionCard } from "../../components/Marketplace/CommissionCard";
 import { MOCK_COMMISSIONS } from "../../data/mockCommissions";
+import { PageLayout } from "../../components/Layout/PageLayout";
 
 const MarketplacePage: React.FC = () => {
   const navigate = useNavigate();
@@ -118,9 +119,9 @@ const MarketplacePage: React.FC = () => {
   const activeFiltersCount = getActiveFiltersCount();
 
   return (
-    <div className="bg-[#121212] text-white pb-12">
-      {/* Header with enhanced styling - Removed top margin/padding */}
-      <div className="relative bg-[#0A1A3C] px-4 md:px-8 border-b border-gray-700 shadow-lg">
+    <PageLayout className="pb-12">
+      {/* Header with enhanced styling */}
+      <div className="relative bg-[#0A1A3C] px-4 md:px-8 -mx-4 sm:-mx-6 lg:-mx-8 border-b border-gray-700 shadow-lg">
         <div className="absolute top-0 left-0 w-full h-1 bg-[#4683df]"></div>
         <div className="max-w-7xl mx-auto relative z-10 py-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
@@ -145,8 +146,8 @@ const MarketplacePage: React.FC = () => {
         </div>
       </div>
 
-      {/* Status Tabs - Added instead of stats bar */}
-      <div className="max-w-7xl mx-auto px-4 md:px-8 mt-4">
+      {/* Status Tabs */}
+      <div className="mt-4">
         <div className="grid grid-cols-4 gap-2">
           <div className="bg-[#162A4C] p-3 rounded-lg border border-gray-700 shadow-md flex flex-col items-center">
             <p className="text-gray-300 text-xs uppercase tracking-wider font-medium">
@@ -192,7 +193,7 @@ const MarketplacePage: React.FC = () => {
       </div>
 
       {/* Filters and Search Row */}
-      <div className="max-w-7xl mx-auto mt-4 px-4 md:px-8 space-y-4">
+      <div className="mt-4 space-y-4">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
           {/* Search Bar - Takes 4 columns on large screens */}
           <div className="lg:col-span-4">
@@ -387,7 +388,7 @@ const MarketplacePage: React.FC = () => {
       </div>
 
       {/* Commissions Grid with enhanced styling */}
-      <div className="max-w-7xl mx-auto mt-4 px-4 md:px-8">
+      <div className="mt-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {sortedCommissions.map((commission) => (
             <div
@@ -480,7 +481,7 @@ const MarketplacePage: React.FC = () => {
       </div>
 
       {/* Pagination - Enhanced styling */}
-      <div className="max-w-7xl mx-auto mt-8 px-4 md:px-8">
+      <div className="mt-8">
         <div className="flex justify-center">
           <nav className="flex items-center bg-[#162A4C] rounded-lg border border-gray-700 p-1 shadow-lg">
             <button
@@ -528,7 +529,7 @@ const MarketplacePage: React.FC = () => {
           </nav>
         </div>
       </div>
-    </div>
+    </PageLayout>
   );
 };
 
