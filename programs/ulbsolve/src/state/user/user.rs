@@ -1,4 +1,3 @@
-use crate::state::commission::Commission;
 use anchor_lang::prelude::*;
 
 #[account]
@@ -16,9 +15,9 @@ pub struct User {
 
     // Lists
     #[max_len(32)]
-    pub wishlist: Vec<Commission>,
+    pub wishlist: Vec<Pubkey>,
     #[max_len(32)]
-    pub working_in: Vec<Commission>,
+    pub working_on: Vec<Pubkey>,
 
     // System info
     pub created_at: i64,
@@ -33,7 +32,7 @@ impl User {
             profile_image: String::new(),
             created_commissions: 0,
             wishlist: Vec::new(),
-            working_in: Vec::new(),
+            working_on: Vec::new(),
             created_at: chrono::Utc::now().timestamp(),
             bump: 0,
         }

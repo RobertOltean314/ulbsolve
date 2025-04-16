@@ -11,10 +11,6 @@ interface PageLayoutProps {
   className?: string;
 }
 
-/**
- * Main Layout component that wraps all pages in the application
- * Provides consistent navigation and footer across all pages
- */
 export const PageLayout: React.FC<PageLayoutProps> = ({
   children,
   hideFooter = false,

@@ -1,5 +1,5 @@
-pub mod commission;
 pub mod user;
-
-pub use commission::*;
 pub use user::*;
+
+pub mod commission;
+pub use commission::*;
