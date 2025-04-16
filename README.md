@@ -47,7 +47,7 @@ o	"I’ll deliver in 2 weeks for 100% reward"
 o	"I’ll deliver in 10 days for 90% of the reward"   
 •	Requester selects the best offer → project status becomes “Taken”   
 •	If no updates in 7 days → requester can choose another contributor   
-•	If stuck with partial progress → contributor has 1 or more weeks to deliver   
+•	Once the contributor submits the first update, the requester sets a custom deadline for future updates   
 •	Deliverable is submitted (as file or repo)   
 •	Requester reviews and can:   
 o	Accept → payment is released   
