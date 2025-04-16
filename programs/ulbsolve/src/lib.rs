@@ -52,6 +52,18 @@ pub mod ulbsolve {
             deadline,
         )
     }
+
+    pub fn submit_commission(
+        ctx: Context<SubmitCommission>,
+        delivery_message: String,
+        delivery_filepath: String,
+    ) -> Result<()> {
+        crate::instructions::commission::handle_submit_commission(
+            ctx,
+            delivery_message,
+            delivery_filepath,
+        )
+    }
 }
 
 #[derive(Accounts)]
