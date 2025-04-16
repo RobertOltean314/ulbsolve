@@ -1,8 +1,8 @@
 # User Stories
 
 🔐 Authentication & Wallet Connection   
-•	As a user, I want to connect my wallet to access the marketplace so that my identity is linked to a crypto address.
-•	As a user, if wallet connection fails, I want to be notified and remain on the landing page.
+•	As a user, I want to connect my wallet to access the marketplace so that my identity is linked to a crypto address.   
+•	As a user, if wallet connection fails, I want to be notified and remain on the landing page.   
 ________________________________________
 🛒 Marketplace Browsing & Discovery
 •	As a user, I want to view all open project requests in the marketplace.
