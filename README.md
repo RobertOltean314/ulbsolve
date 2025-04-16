@@ -82,6 +82,6 @@ o	Wallet balance
 o	“Disconnect” + “Change Wallet” buttons   
 o	Sections:   
 	1. Finished Projects
-  2. Orders
+  	2. Orders
 
 
