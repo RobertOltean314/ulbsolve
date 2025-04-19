@@ -19,6 +19,7 @@ ________________________________________
 ________________________________________
 🎯 Bidding & Offer Management   
 •	As a contributor, I want to submit a proposal to work on a project, including my timeframe and reward percentage.   
+•	As a contributor, I want to be able to update my proposal so I can adjust my offer based on competition.   
 •	As a requester, I want to see a list of all proposals and select the best contributor.   
 •	As a requester, when I accept a proposal, the project should change status to “Taken”.   
 •	As a requester, I want to see all contributors who showed interest, even after selecting someone.   
