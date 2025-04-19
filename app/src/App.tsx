@@ -1,3 +1,4 @@
+import { MarketplaceProvider } from "./context/MarketplaceContext";
 import { SolanaContextProvider } from "./context/SolanaContext";
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
 import {
@@ -20,15 +21,17 @@ const App: FC = () => {
   const endpoint = clusterApiUrl(network);
 
   return (
-    <ConnectionProvider endpoint={endpoint}>
-      <WalletProvider wallets={wallets} autoConnect>
-        <WalletModalProvider>
-          <SolanaContextProvider>
-            <AppContent />
-          </SolanaContextProvider>
-        </WalletModalProvider>
-      </WalletProvider>
-    </ConnectionProvider>
+    <MarketplaceProvider>
+      <ConnectionProvider endpoint={endpoint}>
+        <WalletProvider wallets={wallets} autoConnect>
+          <WalletModalProvider>
+            <SolanaContextProvider>
+              <AppContent />
+            </SolanaContextProvider>
+          </WalletModalProvider>
+        </WalletProvider>
+      </ConnectionProvider>
+    </MarketplaceProvider>
   );
 };
 

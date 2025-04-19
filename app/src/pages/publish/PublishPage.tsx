@@ -1,3 +1,7 @@
+import { useMarketplace } from "../../context/MarketplaceContext";
+import { AnchorProvider, Program, web3} from "@coral-xyz/anchor";
+import { useAnchorWallet } from "@solana/wallet-adapter-react";
+import { Connection } from "@solana/web3.js";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -117,6 +121,18 @@ const PublishPage: React.FC = () => {
     return isValid;
   };
 
+  const calculateDaysLeft = (deadline: string): number => {
+    const deadlineDate = new Date(deadline);
+    const currentDate = new Date();
+    const timeDifference = deadlineDate.getTime() - currentDate.getTime();
+    const daysLeft = Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
+    return daysLeft > 0 ? daysLeft : 0; 
+  };
+
+  const wallet = useAnchorWallet();
+  const connection = new Connection("https://api.devnet.solana.com", "confirmed"); // Replace with your cluster endpoint
+  const { addCommission } = useMarketplace();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -127,13 +143,58 @@ const PublishPage: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      // This would be replaced with actual API calls
-      console.log("Publishing task with data:", formData);
+      if (!wallet) {
+        alert("Please connect your wallet!");
+        return;
+      }
 
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const programId = new web3.PublicKey("xqoAEhS6WGSpM9PmtbXhk59FK7U8VxFtRmyK7vCRhUN");
+      const provider = new AnchorProvider(connection, wallet, { preflightCommitment: "confirmed" }); 
+      const idl = await Program.fetchIdl(programId, provider);
+      if (!idl) {
+        throw new Error("IDL not found for the given program ID");
+      }
+      const program = new Program(idl, provider);
 
-      // Redirect to marketplace after successful publish
+      const userPublicKey = provider.wallet.publicKey;
+      const commissionPublicKey = web3.Keypair.generate().publicKey;
+
+      try{
+      const tx = await program.methods
+      .createCommission(
+        formData.title,
+        formData.description,
+        parseFloat(formData.reward) * 1e9,
+        formData.image || null,
+        formData.deadline ? new Date(formData.deadline).getTime() / 1000 : null
+      )
+      .accounts({
+        user: userPublicKey,
+        commission: commissionPublicKey,
+        systemProgram: web3.SystemProgram.programId,
+      })
+      .rpc();
+
+      console.log("Transaction successful:", tx);
+    } catch (error) {
+      console.error("Transaction failed:", error);
+    }
+
+      addCommission({
+        id: commissionPublicKey.toString(),
+        title: formData.title,
+        description: formData.description,
+        reward: parseFloat(formData.reward),
+        status: "Open",
+        createdAt: new Date().toISOString(),
+        daysLeft: calculateDaysLeft(formData.deadline),
+        participants: 0,
+      });
+      console.log("Commission added to context:", {
+        id: commissionPublicKey.toString(),
+        title: formData.title,
+      });
+
       navigate("/marketplace");
     } catch (error) {
       console.error("Error publishing task:", error);

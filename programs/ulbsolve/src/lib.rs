@@ -7,7 +7,7 @@ pub mod state;
 pub use instructions::*;
 pub use state::*;
 
-declare_id!("GsdFK1NysJH9XUY7h8qu25Qt8eF6ADD84djWb6D7HV8J");
+declare_id!("xqoAEhS6WGSpM9PmtbXhk59FK7U8VxFtRmyK7vCRhUN");
 
 #[program]
 pub mod ulbsolve {

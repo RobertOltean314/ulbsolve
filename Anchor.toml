@@ -11,7 +11,7 @@ ulbsolve = "GsdFK1NysJH9XUY7h8qu25Qt8eF6ADD84djWb6D7HV8J"
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "Localnet"
+cluster = "https://api.devnet.solana.com"
 wallet = "~/.config/solana/id.json"
 
 [scripts]

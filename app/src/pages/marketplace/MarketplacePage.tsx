@@ -5,8 +5,11 @@ import SearchBar from "../../components/Marketplace/SearchBar";
 import { CommissionCard } from "../../components/Marketplace/CommissionCard";
 import { MOCK_COMMISSIONS } from "../../data/mockCommissions";
 import { PageLayout } from "../../components/Layout/PageLayout";
+import { useMarketplace } from "../../context/MarketplaceContext";
 
 const MarketplacePage: React.FC = () => {
+  const { commissions } = useMarketplace();
+
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<CommissionStatus[]>([]);
@@ -106,15 +109,15 @@ const MarketplacePage: React.FC = () => {
     setSortOption("newest");
   };
 
-  const getActiveFiltersCount = () => {
-    let count = 0;
-    if (searchQuery) count++;
-    if (statusFilter.length > 0) count++;
-    if (rewardRangeFilter[0] > 0 || rewardRangeFilter[1] < 100) count++;
-    return count;
-  };
+  // const getActiveFiltersCount = () => {
+  //   let count = 0;
+  //   if (searchQuery) count++;
+  //   if (statusFilter.length > 0) count++;
+  //   if (rewardRangeFilter[0] > 0 || rewardRangeFilter[1] < 100) count++;
+  //   return count;
+  // };
 
-  const activeFiltersCount = getActiveFiltersCount();
+  // const activeFiltersCount = getActiveFiltersCount();
 
   return (
     <PageLayout className="pb-12">
@@ -197,7 +200,7 @@ const MarketplacePage: React.FC = () => {
       {/* Commissions Grid with enhanced styling */}
       <div className="mt-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {sortedCommissions.map((commission) => (
+          {commissions.map((commission) => (
             <div
               key={commission.id}
               className="transition-transform duration-200 hover:translate-y-[-4px]"
@@ -207,7 +210,7 @@ const MarketplacePage: React.FC = () => {
                 title={commission.title}
                 description={commission.description}
                 reward={commission.reward}
-                status={commission.status}
+                status={commission.status as CommissionStatus}
                 createdAt={commission.createdAt}
                 daysLeft={commission.daysLeft}
                 participants={commission.participants}

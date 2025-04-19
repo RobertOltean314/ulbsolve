@@ -1,0 +1,569 @@
+{
+  "accounts": [
+    {
+      "discriminator": [
+        152,
+        254,
+        124,
+        223,
+        255,
+        105,
+        124,
+        133
+      ],
+      "name": "Commission"
+    },
+    {
+      "discriminator": [
+        159,
+        117,
+        95,
+        227,
+        239,
+        151,
+        58,
+        236
+      ],
+      "name": "User"
+    }
+  ],
+  "address": "xqoAEhS6WGSpM9PmtbXhk59FK7U8VxFtRmyK7vCRhUN",
+  "errors": [
+    {
+      "code": 6000,
+      "msg": "You are not authorized to update this profile",
+      "name": "Unauthorized"
+    },
+    {
+      "code": 6001,
+      "msg": "Username exceeds maximum length of 32 characters",
+      "name": "UsernameMaxLengthExceeded"
+    },
+    {
+      "code": 6002,
+      "msg": "Profile image exceeds maximum length of 32 characters",
+      "name": "ProfileImageMaxLengthExceeded"
+    }
+  ],
+  "instructions": [
+    {
+      "accounts": [
+        {
+          "name": "user"
+        },
+        {
+          "name": "commission"
+        },
+        {
+          "address": "11111111111111111111111111111111",
+          "name": "system_program"
+        }
+      ],
+      "args": [],
+      "discriminator": [
+        183,
+        178,
+        106,
+        148,
+        159,
+        143,
+        150,
+        68
+      ],
+      "name": "add_to_wishlist"
+    },
+    {
+      "accounts": [
+        {
+          "name": "user"
+        },
+        {
+          "name": "commission"
+        },
+        {
+          "address": "11111111111111111111111111111111",
+          "name": "system_program"
+        }
+      ],
+      "args": [],
+      "discriminator": [
+        132,
+        222,
+        127,
+        76,
+        83,
+        238,
+        85,
+        207
+      ],
+      "name": "add_to_working_on"
+    },
+    {
+      "accounts": [
+        {
+          "name": "user",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  117,
+                  115,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "user"
+              }
+            ]
+          },
+          "writable": true
+        },
+        {
+          "name": "commission",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  109,
+                  109,
+                  105,
+                  115,
+                  115,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "user"
+              },
+              {
+                "account": "User",
+                "kind": "account",
+                "path": "user.created_commissions"
+              }
+            ]
+          },
+          "writable": true
+        },
+        {
+          "address": "11111111111111111111111111111111",
+          "name": "system_program"
+        }
+      ],
+      "args": [
+        {
+          "name": "title",
+          "type": "string"
+        },
+        {
+          "name": "description",
+          "type": "string"
+        },
+        {
+          "name": "reward",
+          "type": "i64"
+        },
+        {
+          "name": "image",
+          "type": {
+            "option": "string"
+          }
+        },
+        {
+          "name": "deadline",
+          "type": {
+            "option": "i64"
+          }
+        }
+      ],
+      "discriminator": [
+        142,
+        218,
+        95,
+        250,
+        188,
+        9,
+        58,
+        75
+      ],
+      "name": "create_commission"
+    },
+    {
+      "accounts": [],
+      "args": [],
+      "discriminator": [
+        175,
+        175,
+        109,
+        31,
+        13,
+        152,
+        155,
+        237
+      ],
+      "name": "initialize"
+    },
+    {
+      "accounts": [
+        {
+          "name": "submitter",
+          "signer": true,
+          "writable": true
+        },
+        {
+          "name": "commission",
+          "writable": true
+        },
+        {
+          "name": "user",
+          "writable": true
+        },
+        {
+          "address": "11111111111111111111111111111111",
+          "name": "system_program"
+        }
+      ],
+      "args": [
+        {
+          "name": "delivery_message",
+          "type": "string"
+        },
+        {
+          "name": "delivery_filepath",
+          "type": "string"
+        }
+      ],
+      "discriminator": [
+        178,
+        42,
+        18,
+        34,
+        24,
+        217,
+        31,
+        227
+      ],
+      "name": "submit_commission"
+    },
+    {
+      "accounts": [
+        {
+          "name": "user",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  117,
+                  115,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "public_key"
+              }
+            ]
+          },
+          "writable": true
+        },
+        {
+          "name": "public_key",
+          "relations": [
+            "user"
+          ],
+          "signer": true,
+          "writable": true
+        },
+        {
+          "address": "11111111111111111111111111111111",
+          "name": "system_program"
+        }
+      ],
+      "args": [
+        {
+          "name": "username",
+          "type": {
+            "option": "string"
+          }
+        },
+        {
+          "name": "profile_image",
+          "type": {
+            "option": "string"
+          }
+        }
+      ],
+      "discriminator": [
+        98,
+        67,
+        99,
+        206,
+        86,
+        115,
+        175,
+        1
+      ],
+      "name": "update_profile"
+    }
+  ],
+  "metadata": {
+    "description": "Created with Anchor",
+    "name": "ulbsolve",
+    "spec": "0.1.0",
+    "version": "0.1.0"
+  },
+  "types": [
+    {
+      "name": "Commission",
+      "type": {
+        "fields": [
+          {
+            "name": "request_author",
+            "type": "pubkey"
+          },
+          {
+            "name": "title",
+            "type": "string"
+          },
+          {
+            "name": "description",
+            "type": "string"
+          },
+          {
+            "name": "image",
+            "type": "string"
+          },
+          {
+            "name": "reward",
+            "type": "i64"
+          },
+          {
+            "name": "reward_escrow_account",
+            "type": "pubkey"
+          },
+          {
+            "name": "escrow_initialized",
+            "type": "bool"
+          },
+          {
+            "name": "created_at",
+            "type": "i64"
+          },
+          {
+            "name": "deadline",
+            "type": {
+              "option": "i64"
+            }
+          },
+          {
+            "name": "commission_status",
+            "type": {
+              "defined": {
+                "name": "CommissionStatus"
+              }
+            }
+          },
+          {
+            "name": "commission_participants",
+            "type": {
+              "vec": "pubkey"
+            }
+          },
+          {
+            "name": "submissions",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "Submission"
+                }
+              }
+            }
+          },
+          {
+            "name": "accepted_submission_index",
+            "type": {
+              "option": "u8"
+            }
+          },
+          {
+            "name": "cancellation_fee_percentage",
+            "type": "u8"
+          },
+          {
+            "name": "cancellation_reason",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "cancelled_at",
+            "type": {
+              "option": "i64"
+            }
+          },
+          {
+            "name": "dispute_initiated_at",
+            "type": {
+              "option": "i64"
+            }
+          },
+          {
+            "name": "dispute_initiated_by",
+            "type": {
+              "option": "pubkey"
+            }
+          },
+          {
+            "name": "dispute_resolution_deadline",
+            "type": {
+              "option": "i64"
+            }
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ],
+        "kind": "struct"
+      }
+    },
+    {
+      "name": "CommissionStatus",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Open"
+          },
+          {
+            "name": "UnderReview"
+          },
+          {
+            "name": "Completed"
+          },
+          {
+            "name": "Cancelled"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Submission",
+      "type": {
+        "fields": [
+          {
+            "name": "submitter",
+            "type": "pubkey"
+          },
+          {
+            "name": "submitted_at",
+            "type": "i64"
+          },
+          {
+            "name": "delivery_message",
+            "type": "string"
+          },
+          {
+            "name": "delivery_filepath",
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "type": {
+              "defined": {
+                "name": "SubmissionStatus"
+              }
+            }
+          },
+          {
+            "name": "review_feedback",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "reviewed_at",
+            "type": {
+              "option": "i64"
+            }
+          }
+        ],
+        "kind": "struct"
+      }
+    },
+    {
+      "name": "SubmissionStatus",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Pending"
+          },
+          {
+            "name": "Accepted"
+          },
+          {
+            "name": "Rejected"
+          },
+          {
+            "name": "PendingRevision"
+          }
+        ]
+      }
+    },
+    {
+      "name": "User",
+      "type": {
+        "fields": [
+          {
+            "name": "public_key",
+            "type": "pubkey"
+          },
+          {
+            "name": "username",
+            "type": "string"
+          },
+          {
+            "name": "profile_image",
+            "type": "string"
+          },
+          {
+            "name": "created_commissions",
+            "type": "u64"
+          },
+          {
+            "name": "wishlist",
+            "type": {
+              "vec": "pubkey"
+            }
+          },
+          {
+            "name": "working_on",
+            "type": {
+              "vec": "pubkey"
+            }
+          },
+          {
+            "name": "created_at",
+            "type": "i64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ],
+        "kind": "struct"
+      }
+    }
+  ]
+}
