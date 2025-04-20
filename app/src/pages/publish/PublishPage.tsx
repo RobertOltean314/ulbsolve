@@ -1,7 +1,7 @@
 import { useMarketplace } from "../../context/MarketplaceContext";
-import { AnchorProvider, Program, web3} from "@coral-xyz/anchor";
+import { AnchorProvider, BN, Program, web3} from "@coral-xyz/anchor";
 import { useAnchorWallet } from "@solana/wallet-adapter-react";
-import { Connection } from "@solana/web3.js";
+import { Connection, PublicKey } from "@solana/web3.js";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -131,6 +131,9 @@ const PublishPage: React.FC = () => {
 
   const wallet = useAnchorWallet();
   const connection = new Connection("https://api.devnet.solana.com", "confirmed"); // Replace with your cluster endpoint
+  const programId = new web3.PublicKey("xqoAEhS6WGSpM9PmtbXhk59FK7U8VxFtRmyK7vCRhUN");
+  const [commission, setCommission] = useState(null);
+
   const { addCommission } = useMarketplace();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -148,7 +151,14 @@ const PublishPage: React.FC = () => {
         return;
       }
 
-      const programId = new web3.PublicKey("xqoAEhS6WGSpM9PmtbXhk59FK7U8VxFtRmyK7vCRhUN");
+      const taskData = {
+        title: formData.title,
+        description: formData.description,
+        reward: parseFloat(formData.reward),
+        image: null,
+        deadline: formData.deadline ? new Date(formData.deadline).getTime() / 1000 : null, 
+      }
+
       const provider = new AnchorProvider(connection, wallet, { preflightCommitment: "confirmed" }); 
       const idl = await Program.fetchIdl(programId, provider);
       if (!idl) {
@@ -157,21 +167,26 @@ const PublishPage: React.FC = () => {
       const program = new Program(idl, provider);
 
       const userPublicKey = provider.wallet.publicKey;
-      const commissionPublicKey = web3.Keypair.generate().publicKey;
+      const [commissionPDA] = PublicKey.findProgramAddressSync(
+        [Buffer.from("commission"), userPublicKey.toBuffer()],
+        programId
+    );
+
+    const rewardBN = new BN(Math.round(taskData.reward * 1_000_000_000));
 
       try{
       const tx = await program.methods
       .createCommission(
-        formData.title,
-        formData.description,
-        parseFloat(formData.reward) * 1e9,
-        formData.image || null,
-        formData.deadline ? new Date(formData.deadline).getTime() / 1000 : null
+        taskData.title,
+        taskData.description,
+        rewardBN,
+        formData.image,
+        formData.deadline
       )
       .accounts({
         user: userPublicKey,
-        commission: commissionPublicKey,
-        systemProgram: web3.SystemProgram.programId,
+        commission: commissionPDA,
+        systemProgram: web3.SystemProgram.programId
       })
       .rpc();
 
@@ -180,20 +195,20 @@ const PublishPage: React.FC = () => {
       console.error("Transaction failed:", error);
     }
 
-      addCommission({
-        id: commissionPublicKey.toString(),
-        title: formData.title,
-        description: formData.description,
-        reward: parseFloat(formData.reward),
-        status: "Open",
-        createdAt: new Date().toISOString(),
-        daysLeft: calculateDaysLeft(formData.deadline),
-        participants: 0,
-      });
-      console.log("Commission added to context:", {
-        id: commissionPublicKey.toString(),
-        title: formData.title,
-      });
+      // addCommission({
+      //   id: commissionPDA.toString(),
+      //   title: formData.title,
+      //   description: formData.description,
+      //   reward: parseFloat(formData.reward),
+      //   status: "Open",
+      //   createdAt: new Date().toISOString(),
+      //   daysLeft: calculateDaysLeft(formData.deadline),
+      //   participants: 0,
+      // });
+      // console.log("Commission added to context:", {
+      //   id: commissionPDA.toString(),
+      //   title: formData.title,
+      // });
 
       navigate("/marketplace");
     } catch (error) {
@@ -201,6 +216,34 @@ const PublishPage: React.FC = () => {
       alert("Failed to publish task. Please try again.");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const fetchCommission = async() => {
+    if (!wallet) {
+      console.error("Wallet not connected.");
+      return;
+    }
+
+    const provider = new AnchorProvider(connection, wallet, { preflightCommitment: "confirmed" });
+    const idl = await Program.fetchIdl(programId, provider);
+    if (!idl) {
+      throw new Error("IDL not found for the given program ID");
+    }
+    const program = new Program(idl, provider);
+
+    const [commissionPDA] = PublicKey.findProgramAddressSync(
+      [Buffer.from("commission"), wallet.publicKey.toBuffer()],
+      programId
+    );
+
+    try {
+      const commissionData = await (program.account as any).commission.fetch(commissionPDA);
+      console.log("Commission Data:", commissionData);
+
+      setCommission(commissionData); 
+    } catch (error) {
+      console.error("Failed to fetch commission data:", error);
     }
   };
 
