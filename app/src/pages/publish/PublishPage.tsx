@@ -1,5 +1,20 @@
+import { useWallet } from "@solana/wallet-adapter-react";
+import { Connection, PublicKey, SystemProgram} from "@solana/web3.js";
+import { AnchorProvider, Program, web3, BN } from "@project-serum/anchor";
+import idl from "../../../../target/idl/ulbsolve.json";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+
+const { publicKey} = useWallet();
+
+const connection = new Connection("https://api.devnet.solana.com", "confirmed"); // change to mainnet if needed
+
+const provider = new AnchorProvider(connection, window.solana, {
+  preflightCommitment: "processed",
+});
+
+const programID = new PublicKey("xqoAEhS6WGSpM9PmtbXhk59FK7U8VxFtRmyK7vCRhUN"); // Replace with actual Program ID
+const program = new Program(idl as any, programID, provider);
 
 const PublishPage: React.FC = () => {
   const navigate = useNavigate();
@@ -120,20 +135,41 @@ const PublishPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!validateForm()) {
+    if (!validateForm() || !publicKey) {
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      // This would be replaced with actual API calls
-      console.log("Publishing task with data:", formData);
+      const lamports = web3.LAMPORTS_PER_SOL * parseFloat(formData.reward);
+      const commissionRate = 0.05;
+      const commissionLamports = lamports * commissionRate;
+      const totalLamports = lamports + commissionLamports;
 
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const commissionPDA = PublicKey.findProgramAddressSync(
+        [Buffer.from("commission"), publicKey.toBuffer(), Buffer.from(formData.title)],
+        programID
+      )[0];
 
-      // Redirect to marketplace after successful publish
+      const tx = await program.methods
+        .createCommission(
+          formData.title,
+          formData.description,
+          new BN(totalLamports),
+          formData.difficulty,
+          formData.tags.split(",").map((tag) => tag.trim()),
+          new Date(formData.deadline).getTime() / 1000,
+        )
+        .accounts({
+          commission: commissionPDA,
+          authority: publicKey,
+          systemProgram: SystemProgram.programId,
+        })
+        .signers([])
+        .rpc();
+
+      console.log("Transaction successful:", tx);
       navigate("/marketplace");
     } catch (error) {
       console.error("Error publishing task:", error);
