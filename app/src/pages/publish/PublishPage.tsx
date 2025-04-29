@@ -1,9 +1,10 @@
 import { useMarketplace } from "../../context/MarketplaceContext";
-import { AnchorProvider, BN, Program, web3} from "@coral-xyz/anchor";
+import { AnchorProvider, Program, web3} from "@coral-xyz/anchor";
 import { useAnchorWallet } from "@solana/wallet-adapter-react";
 import { Connection, PublicKey } from "@solana/web3.js";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import bn from "bn.js";
 
 const PublishPage: React.FC = () => {
   const navigate = useNavigate();
@@ -154,9 +155,9 @@ const PublishPage: React.FC = () => {
       const taskData = {
         title: formData.title,
         description: formData.description,
-        reward: parseFloat(formData.reward),
+        reward: parseFloat(formData.reward.trim()),
         image: null,
-        deadline: formData.deadline ? new Date(formData.deadline).getTime() / 1000 : null, 
+        deadline: formData.deadline ? new Date(formData.deadline).getTime() / 1000 : null,
       }
 
       const provider = new AnchorProvider(connection, wallet, { preflightCommitment: "confirmed" }); 
@@ -170,16 +171,16 @@ const PublishPage: React.FC = () => {
       const [commissionPDA] = PublicKey.findProgramAddressSync(
         [Buffer.from("commission"), userPublicKey.toBuffer()],
         programId
-    );
+      );
 
-    const rewardBN = new BN(Math.round(taskData.reward * 1_000_000_000));
+      const rewardLamports = BigInt(Math.round(taskData.reward * 1e9));
 
       try{
       const tx = await program.methods
       .createCommission(
         taskData.title,
         taskData.description,
-        rewardBN,
+        rewardLamports,
         formData.image,
         formData.deadline
       )
@@ -190,10 +191,10 @@ const PublishPage: React.FC = () => {
       })
       .rpc();
 
-      console.log("Transaction successful:", tx);
-    } catch (error) {
-      console.error("Transaction failed:", error);
-    }
+        console.log("Transaction successful:", tx);
+      } catch (error) {
+        console.error("Transaction failed:", error);
+      }
 
       // addCommission({
       //   id: commissionPDA.toString(),
